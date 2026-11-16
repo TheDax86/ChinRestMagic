@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Der Chinesische Restesatz – Magie &amp; Kryptographie</title>
+    <style>
+        /* Modernes, mystisches Krypto-Design ohne externe Abhängigkeiten (100% offline-fähig) */
+        :root {
+            --bg-primary: #090d16;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.85);
+            --bg-elevated: #1e293b;
+            --border-subtle: rgba(148, 163, 184, 0.16);
+            --border-gold: rgba(245, 158, 11, 0.45);
+            --border-cyan: rgba(6, 182, 212, 0.45);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-gold: #f59e0b;
+            --accent-gold-light: #fcd34d;
+            --accent-cyan: #06b6d4;
+            --accent-cyan-light: #67e8f9;
+            --accent-emerald: #10b981;
+            --accent-danger: #ef4444;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-glow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(6, 182, 212, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 20%, rgba(245, 158, 11, 0.10) 0%, transparent 45%),
+                radial-gradient(circle at 50% 90%, rgba(99, 102, 241, 0.10) 0%, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Layout Container */
+        .container {
+            width: 100%;
+            max-width: 840px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem;
+            flex: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 2.25rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid var(--border-gold);
+            color: var(--accent-gold-light);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: clamp(1.85rem, 4vw, 2.65rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 15%, var(--accent-cyan-light) 55%, var(--accent-gold-light) 95%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.65rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Karten */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-glow);
+            margin-bottom: 1.5rem;
+            transition: transform 0.25s ease, border-color 0.25s ease;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-main);
+        }
+
+        .step-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+            color: #090d16;
+            font-weight: 800;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        /* Privacy Hinweis */
+        .privacy-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.28);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.88rem;
+            color: #a7f3d0;
+        }
+
+        .privacy-banner svg {
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: var(--accent-emerald);
+        }
+
+        /* Eingabebereich Schüler */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .secret-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        input[type="number"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            background: rgba(9, 13, 22, 0.9);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.9rem 1.1rem;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--accent-gold-light);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            letter-spacing: 0.05em;
+        }
+
+        input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            padding: 0.85rem 1.4rem;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            min-height: 48px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), #d97706);
+            color: #090d16;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.08);
+            box-shadow: 0 10px 28px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+            padding: 0.85rem 1rem;
+            flex-shrink: 0;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan-light);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-subtle);
+            font-size: 0.88rem;
+            padding: 0.55rem 0.95rem;
+            min-height: 38px;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        /* Fehlermeldung */
+        .error-msg {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.9rem;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-msg.visible {
+            display: block;
+            animation: shake 0.35s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Magische Reste Ergebnisbereich */
+        .results-section {
+            display: none;
+            margin-top: 1.75rem;
+            padding-top: 1.75rem;
+            border-top: 1px dashed var(--border-subtle);
+            animation: fadeInUp 0.45s ease forwards;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-intro {
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .results-intro h3 {
+            color: var(--accent-cyan-light);
+            font-size: 1.15rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .results-intro p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .rune-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        @media (max-width: 600px) {
+            .rune-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .rune-card {
+            background: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(9, 13, 22, 0.95));
+            border: 1px solid var(--border-cyan);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+        }
+
+        .rune-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+        }
+
+        .rune-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .rune-value {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--accent-gold-light);
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+            margin: 0.35rem 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .rune-mod {
+            display: inline-block;
+            font-size: 0.82rem;
+            color: var(--accent-cyan-light);
+            background: rgba(6, 182, 212, 0.12);
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .summary-copy-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            background: rgba(9, 13, 22, 0.75);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            font-size: 0.92rem;
+            flex-wrap: wrap;
+        }
+
+        .summary-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* Didaktische Krypto-Brücke (Accordion) */
+        .accordion-toggle {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 0.25rem 0;
+        }
+
+        .accordion-toggle:hover {
+            color: var(--accent-cyan-light);
+        }
+
+        .accordion-icon {
+            transition: transform 0.3s ease;
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+        }
+
+        .accordion-toggle[aria-expanded="true"] .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            display: none;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-subtle);
+            color: #cbd5e1;
+            font-size: 0.96rem;
+        }
+
+        .accordion-content.open {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .crypto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1rem;
+            margin: 1.1rem 0;
+        }
+
+        .crypto-box {
+            background: rgba(9, 13, 22, 0.65);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+        }
+
+        .crypto-box h4 {
+            color: var(--accent-gold-light);
+            font-size: 0.95rem;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .crypto-box p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.08);
+        }
+
+        .secret-trigger-symbol {
+            cursor: default;
+            user-select: none;
+            display: inline-block;
+            padding: 0 2px;
+        }
+
+        /* =====================================================================
+           GEHEIMER LEHRKRAFT-MODUS (OVERLAY / MODAL)
+           Wird nur per Tastatureingabe "Restesatz" (oder geheimem Footer-Tap)
+           sichtbar gemacht. Keinerlei sichtbare Hinweise im normalen UI!
+           ===================================================================== */
+        .master-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .master-overlay.active {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .master-modal {
+            width: 100%;
+            max-width: 760px;
+            background: #0f172a;
+            border: 1.5px solid var(--border-gold);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(245, 158, 11, 0.15);
+            padding: 1.75rem;
+            margin: auto;
+            position: relative;
+        }
+
+        .master-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .master-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .master-badge {
+            background: rgba(245, 158, 11, 0.18);
+            color: var(--accent-gold-light);
+            border: 1px solid var(--border-gold);
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .master-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .master-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mod-selector-card {
+            background: #1e293b;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+        }
+
+        .mod-selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.65rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .mod-selector-header span:last-child {
+            color: var(--accent-cyan-light);
+            font-family: monospace;
+        }
+
+        .quick-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .pill-btn {
+            flex: 1 0 36px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            background: #0f172a;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .pill-btn:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .pill-btn.selected {
+            background: var(--accent-gold);
+            color: #090d16;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Großes Auflösungs-Display für Beamer / Tafel */
+        .revelation-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(6, 182, 212, 0.12));
+            border: 1px solid var(--border-gold);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .revelation-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-gold-light);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .revelation-number {
+            font-size: clamp(3.2rem, 7vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            color: #ffffff;
+            text-shadow: 0 0 30px rgba(245, 158, 11, 0.45);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .revelation-check {
+            margin-top: 0.5rem;
+            font-size: 0.88rem;
+            color: var(--accent-cyan-light);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        /* Schritt-für-Schritt-Rechenweg */
+        .math-breakdown {
+            background: #090d16;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.15rem;
+            font-size: 0.9rem;
+        }
+
+        .math-breakdown h4 {
+            color: var(--accent-cyan-light);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .math-step {
+            padding: 0.45rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.84rem;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        .math-step:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .highlight-gold {
+            color: var(--accent-gold-light);
+            font-weight: 700;
+        }
+
+        .highlight-cyan {
+            color: var(--accent-cyan-light);
+            font-weight: 700;
+        }
+
+        .master-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Kopfbereich -->
+        <header>
+            <div class="badge">
+                <span>✦</span> Mathematik &amp; Kryptographie
+            </div>
+            <h1>Das Orakel der drei Reste</h1>
+            <p class="subtitle">
+                Wähle eine geheime Zahl. Der Algorithmus zerlegt sie in drei unscheinbare Reste – scheinbar unmöglich zurückzurechnen. Oder doch?
+            </p>
+        </header>
+
+        <!-- Hauptkarte: Schüler-Ansicht -->
+        <main class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <span class="step-pill">1</span>
+                    Deine geheime Zahl wählen
+                </h2>
+                <button type="button" id="toggleMaskBtn" class="btn btn-ghost" aria-pressed="false" title="Eingabe vor neugierigen Blicken schützen">
+                    <span id="maskIcon">👁️</span>
+                    <span id="maskText">Zahl verbergen</span>
+                </button>
+            </div>
+
+            <!-- Datenschutz / Lokalitäts-Hinweis -->
+            <div class="privacy-banner">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <div>
+                    <strong>100 % lokal auf deinem Gerät:</strong> Deine geheime Zahl wird nirgendwohin gesendet und nicht gespeichert. Nur du kennst sie!
+                </div>
+            </div>
+
+            <!-- Formular zur Zahleneingabe -->
+            <form id="studentForm" novalidate>
+                <div class="input-group">
+                    <label for="secretNumberInput">Denke dir eine ganze Zahl zwischen <strong>1</strong> und <strong>105</strong> aus:</label>
+                    <div class="secret-input-wrapper">
+                        <input
+                            type="number"
+                            id="secretNumberInput"
+                            min="1"
+                            max="105"
+                            step="1"
+                            inputmode="numeric"
+                            placeholder="z. B. 42"
+                            autocomplete="off"
+                            required
+                        >
+                        <button type="button" id="randomNumberBtn" class="btn btn-secondary" title="Zufällige Zahl würfeln">
+                            🎲 Zufall
+                        </button>
+                    </div>
+                    <div id="inputError" class="error-msg" role="alert">
+                        Bitte gib eine gültige ganze Zahl zwischen 1 und 105 ein.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span>✨</span> Magische Reste erzeugen
+                </button>
+            </form>
+
+            <!-- Ergebnisbereich: Öffentliche Hinweise / Geheimtext -->
+            <section id="resultsSection" class="results-section" aria-live="polite">
+                <div class="results-intro">
+                    <h3>Deine öffentlichen Hinweise (Chiffretext)</h3>
+                    <p>Nenne der Zauberin / dem Zauberer nur diese drei Reste – niemals deine geheime Zahl!</p>
+                </div>
+
+                <div class="rune-grid">
+                    <div class="rune-card">
+                        <div class="rune-label">1. Hinweis</div>
+                        <div class="rune-value" id="rem3Display">–</div>
+                        <div class="rune-mod">Rest bei ÷ 3</div>
+                    </div>
+
+                    <div class="rune-card">
+                        <div class="rune-label">2. Hinweis</div>
+                        <div class="rune-value" id="rem5Display">–</div>
+                        <div class="rune-mod">Rest bei ÷ 5</div>
+                    </div>
+
+                    <div class="rune-card">
+                        <div class="rune-label">3. Hinweis</div>
+                        <div class="rune-value" id="rem7Display">–</div>
+                        <div class="rune-mod">Rest bei ÷ 7</div>
+                    </div>
+                </div>
+
+                <div class="summary-copy-box">
+                    <span class="summary-code" id="summaryText">Reste (mod 3, 5, 7): – , – , –</span>
+                    <button type="button" id="copyResultBtn" class="btn btn-ghost">
+                        📋 <span id="copyBtnLabel">Kopieren</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Didaktische Krypto-Brücke (eingeklappt beim Start) -->
+        <section class="card">
+            <button type="button" id="cryptoAccordionBtn" class="accordion-toggle" aria-expanded="false" aria-controls="cryptoAccordionContent">
+                <span>🔐 Was passiert hier? Die Brücke zur asymmetrischen Verschlüsselung</span>
+                <svg class="accordion-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+
+            <div id="cryptoAccordionContent" class="accordion-content">
+                <p>
+                    Dieser über 1.700 Jahre alte Zahlentrick basiert auf dem <strong>Chinesischen Restesatz</strong> – und veranschaulicht das Grundprinzip moderner <strong>asymmetrischer Verschlüsselung</strong> (wie z. B. RSA):
+                </p>
+
+                <div class="crypto-grid">
+                    <div class="crypto-box">
+                        <h4>1. Klartext (Geheimnis)</h4>
+                        <p>
+                            Deine gewählte Zahl <strong>x</strong> (zwischen 1 und 105) entspricht einer geheimen Nachricht, die du übertragen möchtest.
+                        </p>
+                    </div>
+                    <div class="crypto-box">
+                        <h4>2. Öffentlicher Schlüssel</h4>
+                        <p>
+                            Die Regeln „Teile durch <strong>3, 5 und 7</strong>“ sind für alle bekannt. Jeder kann damit seine Zahl leicht in drei kleine Reste „verschlüsseln“.
+                        </p>
+                    </div>
+                    <div class="crypto-box">
+                        <h4>3. Geheimtext (Chiffre)</h4>
+                        <p>
+                            Die drei Reste <strong>(r₁, r₂, r₃)</strong> wirken für Außenstehende wie harmlose kleine Zahlen. Ohne das passende Verfahren sieht man ihnen die Ausgangszahl nicht an.
+                        </p>
+                    </div>
+                    <div class="crypto-box">
+                        <h4>4. Privater Schlüssel</h4>
+                        <p>
+                            Nur wer die speziellen Gewichtungszahlen kennt, kann aus den drei Resten in Sekunden die ursprüngliche Zahl eindeutig rekonstruieren.
+                        </p>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.88rem; color: var(--text-muted);">
+                    <strong>In der echten Kryptographie:</strong> Statt der kleinen Zahlen 3, 5 und 7 verwendet man gigantische Primzahlen mit hunderten Stellen – dann hilft auch kein Ausprobieren mehr!
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Unauffällige Fußzeile (enthält geheimen Mobile-Tap-Trigger auf dem Symbol ✦) -->
+    <footer>
+        <span>Zahlentheorie &amp; Informatik</span>
+        <span id="secretSymbolTrigger" class="secret-trigger-symbol" aria-hidden="true">✦</span>
+        <span>Chinesischer Restesatz</span>
+    </footer>
+
+    <!-- =========================================================================
+         GEHEIMER ZAUBERTRICK-INHABER / LEHRKRAFT-MODUS
+         Öffnet sich ausschließlich durch Tippen von "Restesatz" auf der Tastatur
+         (oder 5-faches Tippen auf das ✦-Symbol in der Fußzeile für Tablets/Handys)
+         ========================================================================= -->
+    <div id="masterOverlay" class="master-overlay" role="dialog" aria-modal="true" aria-labelledby="masterModalTitle">
+        <div class="master-modal">
+            <div class="master-header">
+                <div class="master-title-group">
+                    <span class="master-badge">Meister-Modus</span>
+                    <h2 id="masterModalTitle" style="font-size: 1.3rem; font-weight: 800;">Auflösung &amp; Rechenweg</h2>
+                </div>
+                <button type="button" id="closeMasterBtn" class="btn btn-ghost" aria-label="Meister-Modus schließen">
+                    ✕ Schließen (Esc)
+                </button>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.15rem;">
+                Wähle die drei vom Schüler genannten Reste aus. Die geheime Ausgangszahl wird sofort berechnet:
+            </p>
+
+            <!-- Auswahl der drei Reste -->
+            <div class="master-grid">
+                <!-- Rest modulo 3 -->
+                <div class="mod-selector-card">
+                    <div class="mod-selector-header">
+                        <span>1. Rest (r₁)</span>
+                        <span>mod 3</span>
+                    </div>
+                    <div class="quick-pills" id="pillsMod3" role="group" aria-label="Rest modulo 3">
+                        <button type="button" class="pill-btn selected" data-mod="3" data-val="0">0</button>
+                        <button type="button" class="pill-btn" data-mod="3" data-val="1">1</button>
+                        <button type="button" class="pill-btn" data-mod="3" data-val="2">2</button>
+                    </div>
+                </div>
+
+                <!-- Rest modulo 5 -->
+                <div class="mod-selector-card">
+                    <div class="mod-selector-header">
+                        <span>2. Rest (r₂)</span>
+                        <span>mod 5</span>
+                    </div>
+                    <div class="quick-pills" id="pillsMod5" role="group" aria-label="Rest modulo 5">
+                        <button type="button" class="pill-btn selected" data-mod="5" data-val="0">0</button>
+                        <button type="button" class="pill-btn" data-mod="5" data-val="1">1</button>
+                        <button type="button" class="pill-btn" data-mod="5" data-val="2">2</button>
+                        <button type="button" class="pill-btn" data-mod="5" data-val="3">3</button>
+                        <button type="button" class="pill-btn" data-mod="5" data-val="4">4</button>
+                    </div>
+                </div>
+
+                <!-- Rest modulo 7 -->
+                <div class="mod-selector-card">
+                    <div class="mod-selector-header">
+                        <span>3. Rest (r₃)</span>
+                        <span>mod 7</span>
+                    </div>
+                    <div class="quick-pills" id="pillsMod7" role="group" aria-label="Rest modulo 7">
+                        <button type="button" class="pill-btn selected" data-mod="7" data-val="0">0</button>
+                        <button type="button" class="pill-btn" data-mod="7" data-val="1">1</button>
+                        <button type="button" class="pill-btn" data-mod="7" data-val="2">2</button>
+                        <button type="button" class="pill-btn" data-mod="7" data-val="3">3</button>
+                        <button type="button" class="pill-btn" data-mod="7" data-val="4">4</button>
+                        <button type="button" class="pill-btn" data-mod="7" data-val="5">5</button>
+                        <button type="button" class="pill-btn" data-mod="7" data-val="6">6</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Großes Ergebnis-Display -->
+            <div class="revelation-box">
+                <div class="revelation-label">Die geheime Zahl lautet</div>
+                <div class="revelation-number" id="revealedNumber">105</div>
+                <div class="revelation-check" id="verificationText">
+                    Probe: 105 mod 3 = 0 | 105 mod 5 = 0 | 105 mod 7 = 0
+                </div>
+            </div>
+
+            <!-- Live Schritt-für-Schritt-Rechenweg (didaktisch für Beamer/Tafel) -->
+            <div class="math-breakdown">
+                <h4>📐 Schritt-für-Schritt-Rechenweg (Chinesischer Restesatz)</h4>
+                <div class="math-step">
+                    <strong>1. Gesamtmodul:</strong> M = 3 · 5 · 7 = <span class="highlight-cyan">105</span>
+                </div>
+                <div class="math-step">
+                    <strong>2. Magische Gewichte (Inverse):</strong><br>
+                    • Für mod 3: M₁ = 35, da 35 · <strong>2</strong> ≡ 1 (mod 3) ⇒ Gewicht = <span class="highlight-gold">70</span><br>
+                    • Für mod 5: M₂ = 21, da 21 · <strong>1</strong> ≡ 1 (mod 5) ⇒ Gewicht = <span class="highlight-gold">21</span><br>
+                    • Für mod 7: M₃ = 15, da 15 · <strong>1</strong> ≡ 1 (mod 7) ⇒ Gewicht = <span class="highlight-gold">15</span>
+                </div>
+                <div class="math-step" id="liveFormulaStep">
+                    <strong>3. Linearkombination:</strong><br>
+                    S = 70 · 0 + 21 · 0 + 15 · 0 = 0
+                </div>
+                <div class="math-step" id="liveModuloStep">
+                    <strong>4. Reduktion modulo 105:</strong><br>
+                    0 mod 105 = 0 (im Bereich 1…105 entspricht 0 der Zahl <span class="highlight-gold">105</span>)
+                </div>
+            </div>
+
+            <div class="master-actions">
+                <button type="button" id="resetMasterBtn" class="btn btn-secondary">
+                    ↺ Zurücksetzen
+                </button>
+                <button type="button" id="doneMasterBtn" class="btn btn-primary" style="width: auto;">
+                    Fertig &amp; Verbergen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * =====================================================================
+         * CHINESISCHER RESTESATZ – ZAUBERTRICK & KRYPTO-ANALOGIE
+         * Vollständig gekapselte Logik ohne externe Bibliotheken
+         * =====================================================================
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM-Referenzen Schüler-Modus ---
+            const studentForm = document.getElementById('studentForm');
+            const secretInput = document.getElementById('secretNumberInput');
+            const toggleMaskBtn = document.getElementById('toggleMaskBtn');
+            const maskIcon = document.getElementById('maskIcon');
+            const maskText = document.getElementById('maskText');
+            const randomNumberBtn = document.getElementById('randomNumberBtn');
+            const inputError = document.getElementById('inputError');
+
+            const resultsSection = document.getElementById('resultsSection');
+            const rem3Display = document.getElementById('rem3Display');
+            const rem5Display = document.getElementById('rem5Display');
+            const rem7Display = document.getElementById('rem7Display');
+            const summaryText = document.getElementById('summaryText');
+            const copyResultBtn = document.getElementById('copyResultBtn');
+            const copyBtnLabel = document.getElementById('copyBtnLabel');
+
+            const cryptoAccordionBtn = document.getElementById('cryptoAccordionBtn');
+            const cryptoAccordionContent = document.getElementById('cryptoAccordionContent');
+
+            // --- DOM-Referenzen Geheimer Meister-Modus ---
+            const masterOverlay = document.getElementById('masterOverlay');
+            const closeMasterBtn = document.getElementById('closeMasterBtn');
+            const resetMasterBtn = document.getElementById('resetMasterBtn');
+            const doneMasterBtn = document.getElementById('doneMasterBtn');
+            const secretSymbolTrigger = document.getElementById('secretSymbolTrigger');
+
+            const revealedNumberEl = document.getElementById('revealedNumber');
+            const verificationTextEl = document.getElementById('verificationText');
+            const liveFormulaStepEl = document.getElementById('liveFormulaStep');
+            const liveModuloStepEl = document.getElementById('liveModuloStep');
+
+            // --- Zustand ---
+            let isMasked = false;
+            let masterRemainders = { 3: 0, 5: 0, 7: 0 };
+
+            // =================================================================
+            // 1. SCHÜLER-MODUS: Eingabe, Maskierung & Reste-Berechnung
+            // =================================================================
+
+            /**
+             * Schaltet zwischen sichtbarer Zahl (type="number") und maskierter
+             * Eingabe (type="password") um, damit Sitznachbarn nicht spicken können.
+             */
+            toggleMaskBtn.addEventListener('click', () => {
+                isMasked = !isMasked;
+                secretInput.type = isMasked ? 'password' : 'number';
+                toggleMaskBtn.setAttribute('aria-pressed', String(isMasked));
+                maskIcon.textContent = isMasked ? '🙈' : '👁️';
+                maskText.textContent = isMasked ? 'Zahl anzeigen' : 'Zahl verbergen';
+            });
+
+            /**
+             * Generiert eine zufällige ganze Zahl zwischen 1 und 105 und berechnet
+             * direkt die zugehörigen Reste.
+             */
+            randomNumberBtn.addEventListener('click', () => {
+                const randomVal = Math.floor(Math.random() * 105) + 1;
+                secretInput.value = randomVal;
+                hideError();
+                calculateAndShowRemainders(randomVal);
+            });
+
+            /**
+             * Validiert die Eingabe und zeigt die Reste mod 3, mod 5 und mod 7 an.
+             */
+            studentForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const rawValue = secretInput.value.trim();
+                const num = Number(rawValue);
+
+                if (!rawValue || !Number.isInteger(num) || num < 1 || num > 105) {
+                    showError('Bitte gib eine gültige ganze Zahl zwischen 1 und 105 ein.');
+                    resultsSection.classList.remove('visible');
+                    return;
+                }
+
+                hideError();
+                calculateAndShowRemainders(num);
+            });
+
+            function showError(message) {
+                inputError.textContent = message;
+                inputError.classList.add('visible');
+                secretInput.focus();
+            }
+
+            function hideError() {
+                inputError.classList.remove('visible');
+            }
+
+            /**
+             * Berechnet die drei Reste r1, r2, r3 und aktualisiert die Karten-UI.
+             */
+            function calculateAndShowRemainders(x) {
+                const r3 = x % 3;
+                const r5 = x % 5;
+                const r7 = x % 7;
+
+                rem3Display.textContent = r3;
+                rem5Display.textContent = r5;
+                rem7Display.textContent = r7;
+
+                summaryText.textContent = `Reste (mod 3, 5, 7): ${r3} , ${r5} , ${r7}`;
+
+                // Animation neu triggern
+                resultsSection.classList.remove('visible');
+                void resultsSection.offsetWidth;
+                resultsSection.classList.add('visible');
+            }
+
+            /**
+             * Kopiert die drei Reste in die Zwischenablage (iFrame-sicher via execCommand).
+             */
+            copyResultBtn.addEventListener('click', () => {
+                const textToCopy = summaryText.textContent;
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.value = textToCopy;
+                tempTextarea.style.position = 'fixed';
+                tempTextarea.style.opacity = '0';
+                document.body.appendChild(tempTextarea);
+                tempTextarea.select();
+
+                try {
+                    document.execCommand('copy');
+                    copyBtnLabel.textContent = 'Kopiert!';
+                    setTimeout(() => {
+                        copyBtnLabel.textContent = 'Kopieren';
+                    }, 2000);
+                } catch (err) {
+                    copyBtnLabel.textContent = 'Fehler';
+                } finally {
+                    document.body.removeChild(tempTextarea);
+                }
+            });
+
+            /**
+             * Klappt den didaktischen Erklärungsbereich (Krypto-Brücke) auf und zu.
+             */
+            cryptoAccordionBtn.addEventListener('click', () => {
+                const isExpanded = cryptoAccordionBtn.getAttribute('aria-expanded') === 'true';
+                cryptoAccordionBtn.setAttribute('aria-expanded', String(!isExpanded));
+                cryptoAccordionContent.classList.toggle('open', !isExpanded);
+            });
+
+            // =================================================================
+            // 2. GEHEIMER AUSLÖSER FÜR DEN ZAUBERTRICK-INHABER ("Restesatz")
+            // =================================================================
+            const SECRET_KEYWORD = 'restesatz';
+            let keyBuffer = '';
+            let keyTimer = null;
+
+            /**
+             * Lauscht global auf Tastatureingaben. Wenn der Nutzer außerhalb eines
+             * Eingabefeldes nacheinander "Restesatz" (Groß-/Kleinschreibung egal)
+             * eintippt, öffnet sich der geheime Meister-Modus.
+             */
+            document.addEventListener('keydown', (event) => {
+                // Schließen per Escape-Taste, wenn Overlay offen ist
+                if (event.key === 'Escape' && masterOverlay.classList.contains('active')) {
+                    closeMasterMode();
+                    return;
+                }
+
+                // Nicht auslösen, wenn gerade in ein Text-/Zahlenfeld getippt wird
+                const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                if (activeTag === 'input' || activeTag === 'textarea') {
+                    return;
+                }
+
+                // Nur einzelne Zeichen berücksichtigen (keine Shift/Alt/Control-Namen)
+                if (event.key.length === 1) {
+                    keyBuffer += event.key.toLowerCase();
+
+                    // Puffer auf die Länge des Passworts begrenzen
+                    if (keyBuffer.length > SECRET_KEYWORD.length) {
+                        keyBuffer = keyBuffer.slice(-SECRET_KEYWORD.length);
+                    }
+
+                    // Puffer nach 3 Sekunden Inaktivität leeren
+                    clearTimeout(keyTimer);
+                    keyTimer = setTimeout(() => {
+                        keyBuffer = '';
+                    }, 3000);
+
+                    // Treffer prüfen
+                    if (keyBuffer === SECRET_KEYWORD) {
+                        keyBuffer = '';
+                        openMasterMode();
+                    }
+                }
+            });
+
+            /**
+             * Zusätzlicher diskreter Touch-Trigger für Tablets/Smartphones ohne physische Tastatur:
+             * 5-maliges schnelles Tippen auf das unscheinbare ✦-Symbol in der Fußzeile.
+             */
+            let symbolTapCount = 0;
+            let symbolTapTimer = null;
+
+            secretSymbolTrigger.addEventListener('click', () => {
+                symbolTapCount++;
+                clearTimeout(symbolTapTimer);
+                symbolTapTimer = setTimeout(() => {
+                    symbolTapCount = 0;
+                }, 1500);
+
+                if (symbolTapCount >= 5) {
+                    symbolTapCount = 0;
+                    openMasterMode();
+                }
+            });
+
+            // =================================================================
+            // 3. MEISTER-MODUS LOGIK & CHINESISCHER RESTESATZ BERECHNUNG
+            // =================================================================
+
+            function openMasterMode() {
+                updateMasterCalculation();
+                masterOverlay.classList.add('active');
+            }
+
+            function closeMasterMode() {
+                masterOverlay.classList.remove('active');
+            }
+
+            closeMasterBtn.addEventListener('click', closeMasterMode);
+            doneMasterBtn.addEventListener('click', closeMasterMode);
+
+            // Klick auf den dunklen Hintergrund schließt das Modal ebenfalls
+            masterOverlay.addEventListener('click', (event) => {
+                if (event.target === masterOverlay) {
+                    closeMasterMode();
+                }
+            });
+
+            // Schnellwahl-Buttons für r1 (mod 3), r2 (mod 5) und r3 (mod 7) verdrahten
+            document.querySelectorAll('.pill-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const mod = Number(btn.dataset.mod);
+                    const val = Number(btn.dataset.val);
+
+                    masterRemainders[mod] = val;
+
+                    // Visuelle Auswahl in der jeweiligen Gruppe aktualisieren
+                    const parentGroup = btn.parentElement;
+                    parentGroup.querySelectorAll('.pill-btn').forEach((sibling) => {
+                        sibling.classList.remove('selected');
+                    });
+                    btn.classList.add('selected');
+
+                    updateMasterCalculation();
+                });
+            });
+
+            // Zurücksetzen der Reste auf (0, 0, 0)
+            resetMasterBtn.addEventListener('click', () => {
+                masterRemainders = { 3: 0, 5: 0, 7: 0 };
+                document.querySelectorAll('.quick-pills').forEach((group) => {
+                    group.querySelectorAll('.pill-btn').forEach((btn) => {
+                        btn.classList.toggle('selected', btn.dataset.val === '0');
+                    });
+                });
+                updateMasterCalculation();
+            });
+
+            /**
+             * Berechnet die geheime Zahl aus (r1, r2, r3) mithilfe des Chinesischen Restesatzes:
+             * M = 3 * 5 * 7 = 105
+             * x = (70 * r1 + 21 * r2 + 15 * r3) mod 105
+             * Da der Zahlenraum 1..105 ist, wird das Ergebnis 0 auf 105 abgebildet.
+             */
+            function updateMasterCalculation() {
+                const r1 = masterRemainders[3];
+                const r2 = masterRemainders[5];
+                const r3 = masterRemainders[7];
+
+                const term1 = 70 * r1;
+                const term2 = 21 * r2;
+                const term3 = 15 * r3;
+                const weightedSum = term1 + term2 + term3;
+
+                const modResult = weightedSum % 105;
+                const secretX = modResult === 0 ? 105 : modResult;
+
+                // Hauptergebnis anzeigen
+                revealedNumberEl.textContent = secretX;
+
+                // Verifikation anzeigen
+                verificationTextEl.textContent =
+                    `Probe: ${secretX} mod 3 = ${secretX % 3}  |  ${secretX} mod 5 = ${secretX % 5}  |  ${secretX} mod 7 = ${secretX % 7}`;
+
+                // Live-Rechenweg aktualisieren
+                liveFormulaStepEl.innerHTML =
+                    `<strong>3. Linearkombination:</strong><br>` +
+                    `S = 70 · <span class="highlight-cyan">${r1}</span> + 21 · <span class="highlight-cyan">${r2}</span> + 15 · <span class="highlight-cyan">${r3}</span> = ` +
+                    `${term1} + ${term2} + ${term3} = <span class="highlight-gold">${weightedSum}</span>`;
+
+                if (modResult === 0) {
+                    liveModuloStepEl.innerHTML =
+                        `<strong>4. Reduktion modulo 105:</strong><br>` +
+                        `${weightedSum} mod 105 = 0 ⇒ Im Bereich 1…105 entspricht 0 der Zahl <span class="highlight-gold">105</span>`;
+                } else {
+                    const quotient = Math.floor(weightedSum / 105);
+                    liveModuloStepEl.innerHTML =
+                        `<strong>4. Reduktion modulo 105:</strong><br>` +
+                        `${weightedSum} mod 105 = ${weightedSum} − (${quotient} · 105) = <span class="highlight-gold">${secretX}</span>`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
